@@ -1,14 +1,9 @@
-(function() {
+(function () {
     'use strict';
 
-    const stopTime = new Date("2028-10-05T18:48:00+01:00");
-
-    if (new Date() >= stopTime) {
-
-        return; 
-    }
-//////////////////////////////////////////////////////////////////////////////////////////////////
-  
+    // -------------------------------
+    // UTILITAIRES
+    // -------------------------------
     function simulateRealClick(element) {
         if (!element) return;
         const rect = element.getBoundingClientRect();
@@ -287,8 +282,6 @@
             addEditionButton();
         }
     }, 500);
-  
-//////////////////////////////////////////////////////////////////////////////////////////////////
-  
 
+    console.log('🎯 Script chargé - attente du toolbar et écoute F7');
 })();
