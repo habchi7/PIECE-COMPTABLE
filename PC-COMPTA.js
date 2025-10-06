@@ -1,11 +1,3 @@
-// ==UserScript==
-// @name Edition la piece v3 29-09-25
-// @namespace http://tampermonkey.net/
-// @version 1.2
-// @description Detect specific span text and run Fiche Affaire Complet script
-// @match http://srv-sageappdev.domsosipo.intra:82/suitefin/server/portal.l1000*
-// @grant none
-// ==/UserScript==
 (function () {
     'use strict';
     // -------------------------------
