@@ -1,6 +1,13 @@
+// ==UserScript==
+// @name Edition la piece v3 29-09-25
+// @namespace http://tampermonkey.net/
+// @version 1.2
+// @description Detect specific span text and run Fiche Affaire Complet script
+// @match http://srv-sageappdev.domsosipo.intra:82/suitefin/server/portal.l1000*
+// @grant none
+// ==/UserScript==
 (function () {
     'use strict';
-
     // -------------------------------
     // UTILITAIRES
     // -------------------------------
@@ -16,7 +23,6 @@
         ];
         events.forEach(event => element.dispatchEvent(event));
     }
-
     // -------------------------------
     // FERMETURE DES TABS D'ÉDITION
     // -------------------------------
@@ -24,23 +30,26 @@
         const checkInterval = 300;
         const maxAttempts = 20;
         let attempts = 0;
-
         function tryClose() {
             const allTabs = document.querySelectorAll("li.sp-tab");
             let found = false;
-
             allTabs.forEach(tab => {
+                if (tab.classList.contains('active')) return; // Skip active tab
                 const title = tab.querySelector(".s_tab_title_content.tab_1");
-                if (title && title.textContent.trim() === "Lancement de l'édition Edition des pièces") {
-                    const closeBtn = tab.querySelector(".sp-tab-close");
-                    if (closeBtn) {
-                        closeBtn.click();
-                        console.log("✅ Tab fermée : Lancement de l'édition Edition des pièces");
+                if (title) {
+                    const titleText = title.textContent.trim();
+                    // Check for exact match or pattern like "CA TSO-25/09-010 - - Saisie des écritures par pièce"
+                    if (titleText === "Lancement de l'édition Edition des pièces" ||
+                        /^[A-Z]{2} [A-Z]{3}-\d{2}\/\d{2}-\d{3} - - Saisie des écritures par pièce$/.test(titleText)) {
+                        const closeBtn = tab.querySelector(".sp-tab-close");
+                        if (closeBtn) {
+                            closeBtn.click();
+                            console.log(`✅ Tab fermée : ${titleText}`);
+                        }
+                        found = true;
                     }
-                    found = true;
                 }
             });
-
             if (!found) {
                 console.log("✅ Toutes les tabs d'édition sont fermées");
                 if (callback) callback();
@@ -55,10 +64,8 @@
                 }
             }
         }
-
         tryClose();
     }
-
     // -------------------------------
     // EXTRACTION
     // -------------------------------
@@ -80,7 +87,6 @@
         const inputElement = document.querySelector('div.s_nav_sedit_top input.s_sedit.s_f.s_nav_sedit_top');
         return inputElement?.value || '';
     }
-
     // -------------------------------
     // DÉTECTION TYPE DE PIÈCE
     // -------------------------------
@@ -124,7 +130,6 @@
         });
         return pieceType;
     }
-
     // -------------------------------
     // CLICS SÉCURISÉS
     // -------------------------------
@@ -137,7 +142,6 @@
         }
         tryClick();
     }
-
     function clickExpenseLinkSafely() {
         let attempts = 0;
         function tryClick() {
@@ -147,7 +151,6 @@
         }
         tryClick();
     }
-
     function clickConstatationLinkSafely() {
         let attempts = 0;
         function tryClick() {
@@ -157,7 +160,6 @@
         }
         tryClick();
     }
-
     function clickPDFPreviewSafely() {
         let attempts = 0;
         function tryClick() {
@@ -167,7 +169,6 @@
         }
         tryClick();
     }
-
     // -------------------------------
     // CHECK ACTIVE TAB TITLE
     // -------------------------------
@@ -180,15 +181,14 @@
         // Assuming there's only one active tab, take the first one
         const activeTab = activeTabs[0];
         const title = activeTab.querySelector(".s_tab_title_content.tab_1");
-        if (title && title.textContent.trim() === "Saisie des écritures par pièce") {
-            console.log("✅ Active tab is 'Saisie des écritures par pièce'");
+        if (title && title.textContent.trim().endsWith("Saisie des écritures par pièce")) {
+            console.log("✅ Active tab is a 'Saisie des écritures par pièce' tab");
             return true;
         } else {
-            console.log("❌ Active tab is not 'Saisie des écritures par pièce'");
+            console.log("❌ Active tab is not a 'Saisie des écritures par pièce' tab");
             return false;
         }
     }
-
     // -------------------------------
     // SCRIPT PRINCIPAL
     // -------------------------------
@@ -198,7 +198,6 @@
             bubbles: true, cancelable: true, ctrlKey: true, shiftKey: true, code: 'Space', key: ' '
         });
         document.dispatchEvent(keyEvent);
-
         setTimeout(() => {
             const inputs = document.querySelectorAll('.swt-form-content .edit-delta-pad input.s_edit_input[maxlength="30"]');
             inputs.forEach(input => {
@@ -207,7 +206,6 @@
                 input.dispatchEvent(new Event('input', { bubbles: true }));
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             });
-
             const keywords = ['VTE', 'ALG', 'OPD', 'STK', 'PAI'];
             if (keywords.some(kw => searchValue.includes(kw))) {
                 setTimeout(clickConstatationLinkSafely, 300);
@@ -216,7 +214,6 @@
                 if (detectedType === "RECETTE") setTimeout(clickRecetteLinkSafely, 300);
                 else if (detectedType === "DEPENSE") setTimeout(clickExpenseLinkSafely, 500);
             }
-
             setTimeout(() => {
                 const pieceNumberLabel = document.querySelector('.swt-form-content .s-label[style*="top: 27px; left: 10px"]');
                 simulateRealClick(pieceNumberLabel);
@@ -224,14 +221,12 @@
             }, 800);
         }, 500);
     }
-
     // -------------------------------
     // BOUTON ET RACCOURCI
     // -------------------------------
     function addEditionButton() {
         const toolbarUl = document.querySelector('div.sp-fstd-black.s_pa.sp-toolbar-ext ul.sp-toolbar');
         if (!toolbarUl) return;
-
         const li = document.createElement('li');
         li.className = 's_pr s_di s_fe';
         const btn = document.createElement('button');
@@ -252,7 +247,6 @@
         });
         li.appendChild(btn);
         toolbarUl.appendChild(li);
-
         btn.addEventListener('click', () => {
             console.log("🔄 Bouton cliqué - fermeture des tabs...");
             closeEditionTabs(() => {
@@ -262,7 +256,6 @@
             });
         });
     }
-
     document.addEventListener('keydown', (event) => {
         if (event.key === 'F7') {
             event.preventDefault();
@@ -274,7 +267,6 @@
             });
         }
     });
-
     const waitForToolbar = setInterval(() => {
         const toolbarUl = document.querySelector('div.sp-fstd-black.s_pa.sp-toolbar-ext ul.sp-toolbar');
         if (toolbarUl) {
@@ -282,6 +274,5 @@
             addEditionButton();
         }
     }, 500);
-
     console.log('🎯 Script chargé - attente du toolbar et écoute F7');
 })();
