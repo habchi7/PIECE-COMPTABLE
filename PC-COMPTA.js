@@ -265,6 +265,6 @@
             clearInterval(waitForToolbar);
             addEditionButton();
         }
-    }, 500);
+    }, 450);
     console.log('🎯 Script chargé - attente du toolbar et écoute F7');
 })();
