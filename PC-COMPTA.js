@@ -198,7 +198,7 @@
                 input.dispatchEvent(new Event('input', { bubbles: true }));
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             });
-            const keywords = ['VTE', 'ALG', 'OPD', 'STK', 'PAI'];
+            const keywords = ['VTE', 'ALG', 'OPD', 'STK', 'PAI', 'FAE', 'AIM'];
             if (keywords.some(kw => searchValue.includes(kw))) {
                 setTimeout(clickConstatationLinkSafely, 300);
             } else {
